@@ -33,10 +33,21 @@
             config.allowUnfree = true;
           };
 
-          packages.default = pkgs.limo.overrideAttrs {
+          packages.default = pkgs.limo.overrideAttrs (final: prev: {
             src = ./.;
+            # Our sources require liblz4/libzstd via pkg-config, which the
+            # upstream nixpkgs expression does not currently provide.
+            nativeBuildInputs = (prev.nativeBuildInputs or [ ]) ++ [
+              pkgs.pkg-config
+              pkgs.lz4.dev
+              pkgs.zstd.dev
+            ];
+            buildInputs = (prev.buildInputs or [ ]) ++ [
+              pkgs.lz4
+              pkgs.zstd
+            ];
             meta.mainProgram = "limo";
-          };
+          });
 
           make-shells.default = {
             packages =
@@ -46,6 +57,8 @@
                 gcc
                 gdb
                 git
+                # Used by the unit tests (Catch2) in the CI test job.
+                catch2
               ]
               ++ config.packages.default.nativeBuildInputs
               ++ config.packages.default.buildInputs;
