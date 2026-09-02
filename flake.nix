@@ -49,6 +49,9 @@
               # Catch2Config.cmake on CMAKE_PREFIX_PATH so find_package works
               # in nix develop.
               pkgs.catch2_3
+              # System libunrar (unrar/dll.hpp + libunrar.so) so that a plain
+              # `cmake -DUSE_SYSTEM_LIBUNRAR=ON` in nix develop can find it.
+              pkgs.unrar
             ];
             buildInputs = (prev.buildInputs or [ ]) ++ [
               pkgs.lz4
