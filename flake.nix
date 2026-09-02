@@ -4,7 +4,10 @@
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
     make-shell.url = "github:nicknovitski/make-shell";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Pinned so the build is reproducible AND so we get a libloot new enough
+    # to provide loot::GameType::openmw (nixpkgs bumped it to 0.25.5 in this rev;
+    # older revs pinned 0.24.5 which lacks it and fails to compile Limo).
+    nixpkgs.url = "github:NixOS/nixpkgs/34ab99075ac4f7e40cf037eef32cb1c360bb85e9";
   };
 
   outputs =
@@ -41,6 +44,10 @@
               pkgs.pkg-config
               pkgs.lz4.dev
               pkgs.zstd.dev
+              # Catch2 (unit tests, BUILD_TESTING=ON). Going through the cmake
+              # nativeBuildInputs hook puts its Catch2Config.cmake on
+              # CMAKE_PREFIX_PATH so find_package(Catch2) works in nix develop.
+              pkgs.catch2
             ];
             buildInputs = (prev.buildInputs or [ ]) ++ [
               pkgs.lz4
@@ -57,8 +64,6 @@
                 gcc
                 gdb
                 git
-                # Used by the unit tests (Catch2) in the CI test job.
-                catch2
               ]
               ++ config.packages.default.nativeBuildInputs
               ++ config.packages.default.buildInputs;
