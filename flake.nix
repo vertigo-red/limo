@@ -44,10 +44,11 @@
               pkgs.pkg-config
               pkgs.lz4.dev
               pkgs.zstd.dev
-              # Catch2 (unit tests, BUILD_TESTING=ON). Going through the cmake
-              # nativeBuildInputs hook puts its Catch2Config.cmake on
-              # CMAKE_PREFIX_PATH so find_package(Catch2) works in nix develop.
-              pkgs.catch2
+              # Catch2 v3 (unit tests, BUILD_TESTING=ON; find_package(Catch2 3)).
+              # Going through the cmake nativeBuildInputs hook puts its
+              # Catch2Config.cmake on CMAKE_PREFIX_PATH so find_package works
+              # in nix develop.
+              pkgs.catch2_3
             ];
             buildInputs = (prev.buildInputs or [ ]) ++ [
               pkgs.lz4
