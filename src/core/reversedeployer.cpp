@@ -784,11 +784,27 @@ void ReverseDeployer::moveFilesFromTargetToSource() const
         sfs::remove(full_dest_path);
       }
     }
+    removeEmptyParentDirs(full_dest_path);
   }
   if(move_failed)
     log_(Log::LOG_DEBUG,
          std::format("Deployer {} failed to move file from target to source. Using copy fallback.",
                      name_));
+}
+
+void ReverseDeployer::removeEmptyParentDirs(const sfs::path& moved_file) const
+{
+  if(!moved_file.has_parent_path())
+    return;
+  sfs::path dir = moved_file.parent_path();
+  while(dir != dest_path_ && !dir.empty() && dir.string().rfind(dest_path_.string(), 0) == 0 &&
+        sfs::exists(dir) && sfs::is_empty(dir))
+  {
+    sfs::remove(dir);
+    if(!dir.has_parent_path())
+      break;
+    dir = dir.parent_path();
+  }
 }
 
 void ReverseDeployer::updateCurrentLoadorder()
@@ -833,6 +849,7 @@ void ReverseDeployer::deployManagedFiles()
     sfs::remove(full_dest_path);
     if(!enabled)
       continue;
+    sfs::create_directories(full_dest_path.parent_path());
 
     if(deploy_mode_ == hard_link)
       sfs::create_hard_link(full_source_path, full_dest_path);
