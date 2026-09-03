@@ -1,0 +1,55 @@
+name: build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    name: Build Linux binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/flakehub-cache-action@v3
+
+      - name: Build Limo
+        run: nix build .#default --print-build-logs
+
+      - name: Verify binary
+        run: |
+          test -x result/bin/limo
+          file result/bin/limo
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: limo-linux-x86_64
+          path: result/bin/limo
+          if-no-files-found: error
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/flakehub-cache-action@v3
+
+      - name: Configure, build and run tests
+        run: |
+          nix develop --command bash -c "
+            set -e
+            cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DUSE_SYSTEM_LIBUNRAR=ON
+            cmake --build build -j2
+            ctest --test-dir build --output-on-failure
+          "
