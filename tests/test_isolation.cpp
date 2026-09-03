@@ -40,9 +40,8 @@ public:
     sandbox_ = BASE_PATH / ("data_test_" + std::to_string(run));
     if(sfs::exists(sandbox_))
       sfs::remove_all(sandbox_);
-    sfs::copy(BASE_PATH / "data",
-              sandbox_,
-              sfs::copy_options::recursive | sfs::copy_options::create_directories);
+    sfs::create_directories(sandbox_);
+    sfs::copy(BASE_PATH / "data", sandbox_, sfs::copy_options::recursive);
     DATA_DIR = sandbox_;
   }
 
