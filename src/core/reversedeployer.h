@@ -338,6 +338,8 @@ private:
                        std::optional<ProgressNode*> progress_node = {});
   /*! \brief Moves all managed files from dest_path_ to source_path_. */
   void moveFilesFromTargetToSource() const;
+  /*! \brief Removes now-empty parent directories left behind after a file move.*/
+  void removeEmptyParentDirs(const std::filesystem::path& moved_file) const;
   /*! \brief Updates current_loadorder_ to reflect managed_files_[current_profile_]. */
   void updateCurrentLoadorder();
   /*! \brief Uses the operation specified in deploy mode to copy/ link files from source to target.*/
