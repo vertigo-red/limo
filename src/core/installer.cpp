@@ -323,7 +323,9 @@ void Installer::extractWithProgress(const sfs::path& source_path,
   struct archive_entry* entry;
   int return_code;
   const char* file_name = source_path.c_str();
-  int flags = ARCHIVE_EXTRACT_TIME;
+  int flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_SECURE_NOABSOLUTE |
+              ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_SYMLINKS |
+              ARCHIVE_EXTRACT_SECURE_LINKS;
   sfs::path working_dir = "/tmp";
   try
   {
