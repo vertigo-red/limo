@@ -10,6 +10,7 @@
 
 TEST_CASE("Mods are added and removed", "[deployer]")
 {
+  resetAppDir();
   Deployer depl = Deployer(DATA_DIR / "source", DATA_DIR / "app", "");
   depl.addProfile();
   depl.addMod(2, true);
@@ -121,6 +122,7 @@ TEST_CASE("Profiles", "[deployer]")
 
 TEST_CASE("Get mod conflicts", "[deployer]")
 {
+  resetAppDir();
   Deployer depl = Deployer(DATA_DIR / "source", DATA_DIR / "app", "");
   depl.addProfile();
   depl.addMod(0, true);
@@ -137,6 +139,7 @@ TEST_CASE("Get mod conflicts", "[deployer]")
 
 TEST_CASE("Get file conflicts", "[deployer]")
 {
+  resetAppDir();
   Deployer depl = Deployer(DATA_DIR / "source", DATA_DIR / "app", "");
   depl.addProfile();
   depl.addMod(0, true);
@@ -150,6 +153,7 @@ TEST_CASE("Get file conflicts", "[deployer]")
 
 TEST_CASE("Conflict groups are created", "[deployer]")
 {
+  resetAppDir();
   Deployer depl(DATA_DIR / "source" / "conflicts", DATA_DIR / "app", "");
   depl.addProfile();
   for(int i : { 0, 1, 2, 3, 4, 5, 6, 7 })
@@ -163,6 +167,7 @@ TEST_CASE("Conflict groups are created", "[deployer]")
 
 TEST_CASE("Mods are sorted", "[deployer]")
 {
+  resetAppDir();
   Deployer depl(DATA_DIR / "source" / "conflicts", DATA_DIR / "app", "");
   depl.addProfile();
   for(int i : { 5, 6, 0, 7, 4, 2, 1, 3 })

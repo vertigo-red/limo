@@ -4,13 +4,21 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_vector.hpp>
+#include <cstdlib>
 #include <filesystem>
 #include <vector>
 
 namespace sfs = std::filesystem;
 
 
-const sfs::path DATA_DIR = BASE_PATH / "data";
+inline sfs::path getDataDir()
+{
+  if(const char* env_dir = std::getenv("LIMO_TEST_DATA_DIR"); env_dir && *env_dir)
+    return sfs::path(env_dir);
+  return BASE_PATH / "data";
+}
+
+inline sfs::path DATA_DIR = getDataDir();
 void verifyDirsAreEqual(sfs::path first_dir, sfs::path second_dir, bool test_content = false);
 void resetAppDir();
 void resetStagingDir();

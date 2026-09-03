@@ -8,6 +8,7 @@ set(TEST_SOURCES
         test_deployer.cpp
         test_fomodinstaller.cpp
         test_installer.cpp
+        test_isolation.cpp
         test_lootdeployer.cpp
         test_moddedapplication.cpp
         test_openmwdeployer.cpp

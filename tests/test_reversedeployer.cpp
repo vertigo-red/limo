@@ -16,13 +16,11 @@ void resetDirs()
   if(sfs::exists(DATA_DIR / "source" / "revdepl" / "source"))
     sfs::remove_all(DATA_DIR / "source" / "revdepl" / "source");
   sfs::create_directories(DATA_DIR / "source" / "revdepl" / "source");
-  
+
   if(sfs::exists(DATA_DIR / "target" / "revdepl" / "target"))
-  {
     sfs::remove_all(DATA_DIR / "target" / "revdepl" / "target");
-    sfs::copy(DATA_DIR / "target" / "revdepl" / "data", DATA_DIR / "target" / "revdepl" / "target",
-              sfs::copy_options::recursive);
-  }
+  sfs::copy(DATA_DIR / "target" / "revdepl" / "data", DATA_DIR / "target" / "revdepl" / "target",
+            sfs::copy_options::recursive | sfs::copy_options::create_directories);
 }
 
 std::vector<std::string> files_to_be_ignored = {
