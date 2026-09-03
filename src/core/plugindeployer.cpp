@@ -1,6 +1,7 @@
 #include "plugindeployer.h"
 #include "pathutils.h"
 #include <algorithm>
+#include <cctype>
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -337,6 +338,11 @@ void PluginDeployer::updatePlugins()
     if(std::regex_match(file_name, plugin_regex_))
       plugin_files.push_back(file_name);
   }
+  str::sort(plugin_files, [](const std::string& a, const std::string& b)
+            { return str::lexicographical_compare(b,
+                                                  a,
+                                                  [](char x, char y)
+                                                  { return std::tolower(x) < std::tolower(y); }); });
   for(auto it = plugins_.begin(); it != plugins_.end(); it++)
   {
     if(str::find_if(plugin_files, [&it](const auto& s) { return it->first == s; }) !=
