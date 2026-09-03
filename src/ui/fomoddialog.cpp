@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QRadioButton>
+#include <format>
 
 namespace sfs = std::filesystem;
 
@@ -276,7 +277,17 @@ void FomodDialog::onNextButtonPressed()
   else
   {
     dialog_completed_ = true;
-    result_ = installer_->getInstallationFiles(getSelection());
+    try
+    {
+      result_ = installer_->getInstallationFiles(getSelection());
+    }
+    catch(const std::exception& e)
+    {
+      Log::error(std::format("FOMOD installation failed: {}.", e.what()));
+      emit addModAborted();
+      QDialog::reject();
+      return;
+    }
     if(result_.empty())
     {
       Log::error("No files to install!");

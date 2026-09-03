@@ -1,0 +1,11 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
+
+    <moduleName>Malicious Mod</moduleName>
+
+    <requiredInstallFiles>
+        <file source="example.plugin" destination="../../escape.txt"/>
+        <file source="example.plugin" destination="ok.txt"/>
+    </requiredInstallFiles>
+
+</config>
