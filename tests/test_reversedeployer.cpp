@@ -179,6 +179,27 @@ TEST_CASE("Managed files are deployed", "[revdepl]")
             DATA_DIR / "target" / "revdepl" / "target",
             sfs::copy_options::skip_existing | sfs::copy_options::recursive);
   rev_depl.updateManagedFiles(true);
+
+  // TEMP DIAGNOSTIC: dump getFiles-visible entries of both dirs
+  {
+    const auto dump_dir = [](const sfs::path& label, const sfs::path& dir)
+    {
+      std::cout << "TMPDIAG[" << label << "] entries:\n";
+      int count = 0;
+      for(const auto& de : sfs::recursive_directory_iterator(dir))
+      {
+        const std::string fn = de.path().filename().string();
+        if(fn == ".lmmfiles" || fn == ".lmm_managed_dir" || fn == ".gitkeep")
+          continue;
+        std::string entry = de.path().string().erase(0, dir.string().size());
+        std::cout << "TMPDIAG  [" << (de.is_directory() ? "DIR " : "FILE") << "] " << entry << "\n";
+        count++;
+      }
+      std::cout << "TMPDIAG[" << label << "] count=" << count << "\n";
+    };
+    dump_dir("target", DATA_DIR / "target" / "revdepl" / "target");
+    dump_dir("managed_0", DATA_DIR / "target" / "revdepl" / "managed_0");
+  }
   
   verifyDirsAreEqual(DATA_DIR / "target" / "revdepl" / "target",
                      DATA_DIR / "target" / "revdepl" / "managed_0", false);
