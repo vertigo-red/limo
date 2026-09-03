@@ -22,7 +22,22 @@ ModdedApplication::ModdedApplication(sfs::path staging_dir,
   name_(name), staging_dir_(staging_dir), command_(command), icon_path_(icon_path)
 {
   if(sfs::exists(staging_dir / CONFIG_FILE_NAME))
-    updateState(true);
+  {
+    try
+    {
+      updateState(true);
+    }
+    catch(const std::exception&)
+    {
+      const sfs::path backup_path = staging_dir_ / ("." + CONFIG_FILE_NAME + ".bak");
+      if(!sfs::exists(backup_path))
+        throw;
+      sfs::copy(backup_path,
+                staging_dir_ / CONFIG_FILE_NAME,
+                sfs::copy_options::overwrite_existing);
+      updateState(true);
+    }
+  }
   else
   {
     addProfile({ "Default", app_version, -1 });
