@@ -4,7 +4,10 @@
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
     make-shell.url = "github:nicknovitski/make-shell";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Pinned so the build is reproducible AND so we get a libloot new enough
+    # to provide loot::GameType::openmw (nixpkgs bumped it to 0.25.5 in this rev;
+    # older revs pinned 0.24.5 which lacks it and fails to compile Limo).
+    nixpkgs.url = "github:NixOS/nixpkgs/34ab99075ac4f7e40cf037eef32cb1c360bb85e9";
   };
 
   outputs =
@@ -33,10 +36,29 @@
             config.allowUnfree = true;
           };
 
-          packages.default = pkgs.limo.overrideAttrs {
+          packages.default = pkgs.limo.overrideAttrs (final: prev: {
             src = ./.;
+            # Our sources require liblz4/libzstd via pkg-config, which the
+            # upstream nixpkgs expression does not currently provide.
+            nativeBuildInputs = (prev.nativeBuildInputs or [ ]) ++ [
+              pkgs.pkg-config
+              pkgs.lz4.dev
+              pkgs.zstd.dev
+              # Catch2 v3 (unit tests, BUILD_TESTING=ON; find_package(Catch2 3)).
+              # Going through the cmake nativeBuildInputs hook puts its
+              # Catch2Config.cmake on CMAKE_PREFIX_PATH so find_package works
+              # in nix develop.
+              pkgs.catch2_3
+              # System libunrar (unrar/dll.hpp + libunrar.so) so that a plain
+              # `cmake -DUSE_SYSTEM_LIBUNRAR=ON` in nix develop can find it.
+              pkgs.unrar
+            ];
+            buildInputs = (prev.buildInputs or [ ]) ++ [
+              pkgs.lz4
+              pkgs.zstd
+            ];
             meta.mainProgram = "limo";
-          };
+          });
 
           make-shells.default = {
             packages =
