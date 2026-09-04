@@ -784,6 +784,19 @@ void ReverseDeployer::moveFilesFromTargetToSource() const
         sfs::remove(full_dest_path);
       }
     }
+    sfs::path moved_dir = full_dest_path.parent_path();
+    while(moved_dir != dest_path_ && pu::exists(moved_dir))
+    {
+      try
+      {
+        sfs::remove(moved_dir);
+      }
+      catch(const std::filesystem::filesystem_error&)
+      {
+        break;
+      }
+      moved_dir = moved_dir.parent_path();
+    }
   }
   if(move_failed)
     log_(Log::LOG_DEBUG,
@@ -833,6 +846,7 @@ void ReverseDeployer::deployManagedFiles()
     sfs::remove(full_dest_path);
     if(!enabled)
       continue;
+    sfs::create_directories(full_dest_path.parent_path());
 
     if(deploy_mode_ == hard_link)
       sfs::create_hard_link(full_source_path, full_dest_path);
