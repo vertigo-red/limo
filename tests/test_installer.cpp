@@ -4,6 +4,7 @@
 #include <catch2/matchers/catch_matchers_vector.hpp>
 #include <archive.h>
 #include <archive_entry.h>
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -151,4 +152,27 @@ TEST_CASE("Root levels", "[installer]")
                        3);
     verifyDirsAreEqual(DATA_DIR / "target" / "root_level" / "3", DATA_DIR / "staging" / "3");
   }
+}
+
+TEST_CASE("File names are marked as directories only for directories", "[installer]")
+{
+  const auto entries =
+    Installer::getArchiveFileNames(DATA_DIR / "source" / "revdepl" / "data" / "1");
+  const auto find_entry = [&entries](const sfs::path& name)
+  {
+    return std::find_if(entries.begin(),
+                        entries.end(),
+                        [&name](const auto& p) { return p.first == name; });
+  };
+
+  const auto some_file = find_entry("some file.txt");
+  REQUIRE(some_file != entries.end());
+  REQUIRE_FALSE(some_file->second);
+  REQUIRE_FALSE(find_entry("12")->second);
+
+  const auto a_dir = find_entry("a");
+  REQUIRE(a_dir != entries.end());
+  REQUIRE(a_dir->second);
+  REQUIRE_FALSE(find_entry(sfs::path("a") / "1")->second);
+  REQUIRE(find_entry(sfs::path("b") / "5") != entries.end());
 }

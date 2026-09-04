@@ -216,7 +216,7 @@ std::vector<std::pair<sfs::path, bool>> Installer::getArchiveFileNames(const sfs
   if(sfs::is_directory(path))
   {
     for(const auto& dir_entry : sfs::recursive_directory_iterator(path))
-      file_names.emplace_back(pu::getRelativePath(dir_entry.path(), path), sfs::is_directory(path));
+      file_names.emplace_back(pu::getRelativePath(dir_entry.path(), path), dir_entry.is_directory());
     return file_names;
   }
   struct archive* source;
