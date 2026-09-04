@@ -528,7 +528,16 @@ void Deployer::deployFiles(const std::map<sfs::path, int>& source_files,
     else if(deploy_mode_ == sym_link)
       sfs::create_symlink(source_path, dest_path);
     else
-      sfs::create_hard_link(source_path, dest_path);
+    {
+      try
+      {
+        sfs::create_hard_link(source_path, dest_path);
+      }
+      catch(const sfs::filesystem_error&)
+      {
+        sfs::copy_file(source_path, dest_path);
+      }
+    }
 
     if(progress_node)
       (*progress_node)->advance();
@@ -853,7 +862,16 @@ void Deployer::updateDeployedFilesForMod(int mod_id,
     else if(deploy_mode_ == DeployMode::copy)
       sfs::copy(source_path, dest_path);
     else
-      sfs::create_hard_link(source_path, dest_path);
+    {
+      try
+      {
+        sfs::create_hard_link(source_path, dest_path);
+      }
+      catch(const sfs::filesystem_error&)
+      {
+        sfs::copy(source_path, dest_path);
+      }
+    }
   }
 }
 

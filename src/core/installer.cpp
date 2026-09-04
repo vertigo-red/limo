@@ -216,7 +216,7 @@ std::vector<std::pair<sfs::path, bool>> Installer::getArchiveFileNames(const sfs
   if(sfs::is_directory(path))
   {
     for(const auto& dir_entry : sfs::recursive_directory_iterator(path))
-      file_names.emplace_back(pu::getRelativePath(dir_entry.path(), path), sfs::is_directory(path));
+      file_names.emplace_back(pu::getRelativePath(dir_entry.path(), path), dir_entry.is_directory());
     return file_names;
   }
   struct archive* source;
@@ -323,7 +323,8 @@ void Installer::extractWithProgress(const sfs::path& source_path,
   struct archive_entry* entry;
   int return_code;
   const char* file_name = source_path.c_str();
-  int flags = ARCHIVE_EXTRACT_TIME;
+  int flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS |
+              ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_SYMLINKS;
   sfs::path working_dir = "/tmp";
   try
   {
