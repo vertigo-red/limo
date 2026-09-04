@@ -4,11 +4,29 @@
 #include "test_utils.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_vector.hpp>
+#include <fstream>
 #include <iostream>
 #include <ranges>
 
 
 const int INSTALLER_FLAGS = Installer::preserve_case | Installer::preserve_directories;
+
+TEST_CASE("Corrupt config is restored from backup", "[app][security]")
+{
+  resetStagingDir();
+  {
+    ModdedApplication app(DATA_DIR / "staging", "test");
+    REQUIRE(app.getProfileNames().size() == 1);
+  }
+  const sfs::path settings = DATA_DIR / "staging" / ModdedApplication::CONFIG_FILE_NAME;
+  REQUIRE(sfs::exists(settings));
+  {
+    std::ofstream file(settings, std::ios::binary | std::ios::trunc);
+    file << "this is not valid json {{{{";
+  }
+  REQUIRE_NOTHROW(ModdedApplication(DATA_DIR / "staging", "test"));
+  REQUIRE(sfs::exists(DATA_DIR / "staging" / ("." + ModdedApplication::CONFIG_FILE_NAME + ".bak")));
+}
 
 TEST_CASE("Mods are installed", "[app]")
 {
