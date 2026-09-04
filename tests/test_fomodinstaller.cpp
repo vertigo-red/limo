@@ -16,6 +16,14 @@ TEST_CASE("Required files are detected", "[fomod]")
   REQUIRE_THAT(files, Catch::Matchers::Equals(target));
 }
 
+TEST_CASE("FOMOD destinations cannot escape the target", "[fomod][security]")
+{
+  fomod::FomodInstaller installer;
+  installer.init(DATA_DIR / "source" / "fomod" / "fomod" / "escape.xml");
+  REQUIRE(installer.hasNoSteps());
+  REQUIRE_THROWS(installer.getInstallationFiles({}));
+}
+
 TEST_CASE("Steps are executed", "[fomod]")
 {
   fomod::FomodInstaller installer;

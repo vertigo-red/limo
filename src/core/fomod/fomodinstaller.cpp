@@ -155,6 +155,9 @@ std::vector<std::pair<sfs::path, sfs::path>> FomodInstaller::getInstallationFile
     std::string destination = file.destination.string();
     while(destination.starts_with("/") || destination.starts_with("\\"))
       destination.erase(0, 1);
+    if(destinationEscapesRoot(destination))
+      throw std::runtime_error(
+        std::format("FOMOD file destination '{}' escapes the target directory.", destination));
     files.emplace_back(file.source, destination);
   }
   return files;
@@ -173,6 +176,13 @@ void FomodInstaller::parseFileList(const pugi::xml_node& file_list,
   {
     File new_file;
     const auto source_path = pu::normalizePath(file.attribute("source").value());
+    if(hasDotDotComponent(source_path))
+    {
+      if(warn_missing)
+        Log::warning(std::format("Fomod source '{}' escapes the mod directory; skipping.",
+                                 source_path));
+      continue;
+    }
     auto source_path_optional = pu::pathExists(source_path, mod_base_path_);
     if(!source_path_optional)
     {
@@ -198,6 +208,22 @@ void FomodInstaller::parseFileList(const pugi::xml_node& file_list,
       new_file.priority = priority.as_int();
     target_vector.push_back(new_file);
   }
+}
+
+bool FomodInstaller::destinationEscapesRoot(const std::string& destination)
+{
+  if(destination.empty() || destination.starts_with('/'))
+    return true;
+  return hasDotDotComponent(destination);
+}
+
+bool FomodInstaller::hasDotDotComponent(const std::string& path)
+{
+  sfs::path rel(path);
+  for(const auto& component : rel)
+    if(component == "..")
+      return true;
+  return false;
 }
 
 void FomodInstaller::parseInstallSteps(const pugi::xml_node& steps)

@@ -115,6 +115,19 @@ private:
                      std::vector<File>& target_vector,
                      bool warn_missing = true);
   /*!
+   * \brief Returns true if the given relative destination path resolves above
+   * the target root (e.g. contains a ".." component).
+   * \param destination Normalized relative installation destination.
+   * \return True if the destination could escape the target directory.
+   */
+  static bool destinationEscapesRoot(const std::string& destination);
+  /*!
+   * \brief Returns true if the given relative path contains a ".." component.
+   * \param path Normalized relative path.
+   * \return True if the path could climb above its root.
+   */
+  static bool hasDotDotComponent(const std::string& path);
+  /*!
    * \brief Extracts all install steps from given node and stores them in steps_.
    * \param steps Source node.
    */
