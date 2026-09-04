@@ -2,9 +2,59 @@
 #include "test_utils.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_vector.hpp>
+#include <archive.h>
+#include <archive_entry.h>
 #include <iostream>
 #include <vector>
 
+
+TEST_CASE("Extraction rejects path traversal entries", "[installer][security]")
+{
+  resetStagingDir();
+  const sfs::path malicious_archive = DATA_DIR / "staging" / "malicious.tar";
+
+  sfs::path entry_names[] = { "../escaped.txt", "/abs_escape.txt" };
+  size_t escaped = 0;
+  {
+    struct archive* a = archive_write_new();
+    archive_write_set_format_pax_restricted(a);
+    archive_write_open_filename(a, malicious_archive.string().c_str());
+    for(const auto& name : entry_names)
+    {
+      struct archive_entry* e = archive_entry_new();
+      archive_entry_set_pathname(e, name.string().c_str());
+      archive_entry_set_filetype(e, AE_IFREG);
+      archive_entry_set_perm(e, 0644);
+      archive_write_header(a, e);
+      archive_write_data(a, "payload", 7);
+      archive_entry_free(e);
+    }
+    archive_write_close(a);
+    archive_write_free(a);
+  }
+
+  try
+  {
+    Installer::extract(malicious_archive, DATA_DIR / "staging" / "extract");
+  }
+  catch(const std::exception&)
+  {
+    // Either a throw (secure rejection) or a confined write is acceptable; the
+    // security invariant is that nothing lands outside the destination dir.
+  }
+
+  if(sfs::exists(DATA_DIR / "staging" / "escaped.txt"))
+    escaped++;
+  if(sfs::exists(DATA_DIR / "escaped.txt"))
+    escaped++;
+  if(sfs::exists(DATA_DIR / "abs_escape.txt"))
+    escaped++;
+  REQUIRE(escaped == 0);
+
+  sfs::remove_all(malicious_archive);
+  if(sfs::exists(DATA_DIR / "staging"))
+    sfs::remove_all(DATA_DIR / "staging");
+}
 
 TEST_CASE("Files are extracted", "[installer]")
 {
