@@ -1,6 +1,7 @@
 #include "../src/ui/colors.h"
 #include "../src/ui/deployerlistmodel.h"
 #include "../src/ui/deployerlistproxymodel.h"
+#include "../src/ui/modlistmodel.h"
 #include <QBrush>
 #include <QStringList>
 #include <catch2/catch_test_macros.hpp>
@@ -8,6 +9,13 @@
 
 namespace
 {
+class TestDeployerListProxyModel : public DeployerListProxyModel
+{
+public:
+  using DeployerListProxyModel::DeployerListProxyModel;
+  void invalidate() { invalidateFilter(); }
+};
+
 DeployerInfo threeModInfo()
 {
   DeployerInfo info;
@@ -137,24 +145,24 @@ TEST_CASE("The deployer proxy filters by activation status", "[deployerlist]")
 {
   DeployerListModel model;
   model.setDeployerInfo(threeModInfo());
-  DeployerListProxyModel proxy(nullptr, nullptr);
+  TestDeployerListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
   REQUIRE(proxy.rowCount() == 3);
 
   proxy.addFilter(DeployerListProxyModel::filter_active, false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 2);
 
   proxy.addFilter(DeployerListProxyModel::filter_inactive, false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 1);
 
   proxy.removeFilter(DeployerListProxyModel::filter_inactive, false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 2);
 
   proxy.clearFilter(false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 3);
 }
 
@@ -162,16 +170,16 @@ TEST_CASE("The deployer proxy filters by conflicts", "[deployerlist]")
 {
   DeployerListModel model;
   model.setDeployerInfo(threeModInfo());
-  DeployerListProxyModel proxy(nullptr, nullptr);
+  TestDeployerListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.setConflicts({ 1, 3 });
   proxy.addFilter(DeployerListProxyModel::filter_conflicts, false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 2);
 
   proxy.removeFilter(DeployerListProxyModel::filter_conflicts, false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 3);
 }
 
@@ -179,21 +187,21 @@ TEST_CASE("The deployer proxy filters by tags", "[deployerlist]")
 {
   DeployerListModel model;
   model.setDeployerInfo(threeModInfo());
-  DeployerListProxyModel proxy(nullptr, nullptr);
+  TestDeployerListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.addFilter(DeployerListProxyModel::filter_tags, false);
   proxy.addTagFilter("zzz", true, false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 1);
   REQUIRE(proxy.getTagFilters() == std::vector<std::pair<QString, bool>>{ { "zzz", true } });
 
   proxy.addTagFilter("zzz", false, false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 2);
 
   proxy.removeTagFilter("zzz", false);
-  proxy.invalidateFilter();
+  proxy.invalidate();
   REQUIRE(proxy.rowCount() == 3);
   REQUIRE(proxy.getTagFilters().empty());
 }
@@ -202,7 +210,7 @@ TEST_CASE("The deployer proxy filters by filter string", "[deployerlist]")
 {
   DeployerListModel model;
   model.setDeployerInfo(threeModInfo());
-  DeployerListProxyModel proxy(nullptr, nullptr);
+  TestDeployerListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.setFilterString("Beta");
@@ -226,7 +234,7 @@ TEST_CASE("The deployer proxy matches source mod names", "[deployerlist]")
   info.source_mod_names_ = { "Base Unpacker", "Sourceless" };
   DeployerListModel model;
   model.setDeployerInfo(info);
-  DeployerListProxyModel proxy(nullptr, nullptr);
+  TestDeployerListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.setFilterString("Unpacker");
@@ -241,7 +249,7 @@ TEST_CASE("The deployer proxy passes data through and keeps it read only", "[dep
 {
   DeployerListModel model;
   model.setDeployerInfo(threeModInfo());
-  DeployerListProxyModel proxy(nullptr, nullptr);
+  TestDeployerListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   REQUIRE(proxy.data(proxy.index(0, DeployerListModel::name_col)).toString() == "Alpha");
@@ -253,7 +261,7 @@ TEST_CASE("The deployer proxy tracks filter mode mutually exclusively", "[deploy
 {
   DeployerListModel model;
   model.setDeployerInfo(threeModInfo());
-  DeployerListProxyModel proxy(nullptr, nullptr);
+  TestDeployerListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   REQUIRE(proxy.getFilterMode() == 0);
