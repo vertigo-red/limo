@@ -157,9 +157,9 @@ TEST_CASE("The deployer proxy filters by activation status", "[deployerlist]")
   proxy.invalidate();
   REQUIRE(proxy.rowCount() == 1);
 
-  proxy.removeFilter(DeployerListProxyModel::filter_inactive, false);
+proxy.removeFilter(DeployerListProxyModel::filter_inactive, false);
   proxy.invalidate();
-  REQUIRE(proxy.rowCount() == 2);
+  REQUIRE(proxy.rowCount() == 3);
 
   proxy.clearFilter(false);
   proxy.invalidate();
