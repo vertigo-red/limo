@@ -9,6 +9,7 @@ set(TEST_SOURCES
         test_fomodinstaller.cpp
         test_installer.cpp
         test_lootdeployer.cpp
+        test_lspakextractor.cpp
         test_moddedapplication.cpp
         test_openmwdeployer.cpp
         test_reversedeployer.cpp
