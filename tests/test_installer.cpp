@@ -176,3 +176,14 @@ TEST_CASE("File names are marked as directories only for directories", "[install
   REQUIRE_FALSE(find_entry(sfs::path("a") / "1")->second);
   REQUIRE(find_entry(sfs::path("b") / "5") != entries.end());
 }
+
+TEST_CASE("RAR entry names that escape the target are rejected", "[installer][security]")
+{
+  REQUIRE(Installer::entryEscapesRoot("../escaped.txt"));
+  REQUIRE(Installer::entryEscapesRoot("dir/../escaped.txt"));
+  if(sfs::path("/").is_absolute())
+    REQUIRE(Installer::entryEscapesRoot("/abs_escape.txt"));
+
+  REQUIRE_FALSE(Installer::entryEscapesRoot("data/meshes/model.nif"));
+  REQUIRE_FALSE(Installer::entryEscapesRoot("plugin.esp"));
+}

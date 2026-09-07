@@ -128,6 +128,13 @@ public:
   /*! \brief Callback for logging. */
   static inline std::function<void(Log::LogLevel, const std::string&)> log =
     [](Log::LogLevel a, const std::string& b) {};
+  /*!
+   * \brief Returns true if an archive entry name could escape the extraction
+   * root (absolute path or containing a ".." component).
+   * \param entry_name The raw entry name as stored in the archive.
+   * \return True if the entry must not be extracted.
+   */
+  static bool entryEscapesRoot(const std::string& entry_name);
 
 private:
   /*! \brief Directory name used to temporary storage of files during installation. */

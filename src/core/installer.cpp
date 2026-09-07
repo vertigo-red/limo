@@ -423,6 +423,19 @@ void Installer::extractWithProgress(const sfs::path& source_path,
   sfs::current_path(working_dir);
 }
 
+bool Installer::entryEscapesRoot(const std::string& entry_name)
+{
+  sfs::path entry(entry_name);
+  if(entry.is_absolute())
+    return true;
+  for(const auto& component : entry)
+  {
+    if(component == "..")
+      return true;
+  }
+  return false;
+}
+
 void Installer::extractRarArchive(const sfs::path& source_path, const sfs::path& dest_path)
 {
   log(Log::LOG_DEBUG, "Using fallback rar extraction");
@@ -446,8 +459,15 @@ void Installer::extractRarArchive(const sfs::path& source_path, const sfs::path&
   int header_state = RARReadHeaderEx(hArcData, header_data.get());
   while(header_state == 0)
   {
-    if(RARProcessFile(hArcData, RAR_EXTRACT, output_path, nullptr) != 0)
+    if(entryEscapesRoot(header_data->FileName))
+    {
+      if(RARProcessFile(hArcData, RAR_SKIP, output_path, nullptr) != 0)
+        throw CompressionError("Failed to extract RAR archive.");
+    }
+    else if(RARProcessFile(hArcData, RAR_EXTRACT, output_path, nullptr) != 0)
+    {
       throw CompressionError("Failed to extract RAR archive.");
+    }
     header_state = RARReadHeaderEx(hArcData, header_data.get());
   }
   if(header_state != ERAR_END_ARCHIVE)
