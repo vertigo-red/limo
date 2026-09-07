@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
 #include <json/json.h>
 #include <string>
@@ -31,7 +32,7 @@ struct Mod
   /*! \brief Timestamp for when the mod was updated at the remote source. */
   std::time_t remote_update_time;
   /*! \brief Total size of the installed mod on disk. */
-  unsigned long size_on_disk;
+  uintmax_t size_on_disk;
   /*! \brief Timestamp for when the user requested to suppress current update notifications. */
   std::time_t suppress_update_time;
   /*! \brief If this was retreived from a remote source: The mod id on the remote. */
@@ -64,7 +65,7 @@ struct Mod
       const std::filesystem::path& source_l,
       const std::string& source_r,
       const std::time_t& time_r,
-      unsigned long size,
+      uintmax_t size,
       const std::time_t& suppress_time,
       long remote_mod_id,
       long remote_file_id,

@@ -58,7 +58,7 @@ void Installer::extract(const sfs::path& source_path,
   }
 }
 
-unsigned long Installer::install(const sfs::path& source,
+uintmax_t Installer::install(const sfs::path& source,
                                  const sfs::path& destination,
                                  int options,
                                  const std::string& type,
@@ -197,7 +197,7 @@ unsigned long Installer::install(const sfs::path& source,
       throw error;
     }
   }
-  unsigned long size = 0;
+  uintmax_t size = 0;
   for(const auto& dir_entry : sfs::recursive_directory_iterator(destination))
     if(dir_entry.is_regular_file())
       size += dir_entry.file_size();

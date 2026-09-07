@@ -7,6 +7,7 @@
 
 #include "log.h"
 #include "progressnode.h"
+#include <cstdint>
 #include <filesystem>
 #include <functional>
 #include <map>
@@ -84,7 +85,7 @@ public:
    * root_level.
    * \return The total file size of the installed mod on disk.
    */
-  static unsigned long install(
+  static uintmax_t install(
     const std::filesystem::path& source,
     const std::filesystem::path& destination,
     int options,

@@ -163,7 +163,7 @@ QVariant ModListModel::data(const QModelIndex& index, int role) const
   if(role == mod_size_role)
   {
     QVariant var;
-    var.setValue<unsigned long>(active_mods_.at(row).mod.size_on_disk);
+    var.setValue<qulonglong>(active_mods_.at(row).mod.size_on_disk);
     return var;
   }
   if(role == mod_version_role)
@@ -224,8 +224,8 @@ void ModListModel::setModInfo(const std::vector<ModInfo>& mods)
     manual_tag_map_[info.mod.id] = info.manual_tags;
     auto_tag_map_[info.mod.id] = info.auto_tags;
 
-    unsigned long size = info.mod.size_on_disk;
-    unsigned long last_size = 0;
+    qulonglong size = info.mod.size_on_disk;
+    qulonglong last_size = 0;
     int exp = 0;
     const std::vector<QString> units{ "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
     QString size_string = "";
