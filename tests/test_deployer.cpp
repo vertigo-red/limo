@@ -4,6 +4,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <iostream>
+#include <optional>
 #include <set>
 #include <ranges>
 
@@ -273,3 +274,39 @@ TEST_CASE("Files are deployed as sym links", "[deployer]")
         REQUIRE(std::filesystem::is_symlink(dir_entry.path()));
   }
 }
+
+TEST_CASE("Setting status of a missing mod is a no-op", "[deployer]")
+{
+  resetAppDir();
+  Deployer depl = Deployer(DATA_DIR / "source", DATA_DIR / "app", "");
+  depl.addProfile();
+  depl.addMod(1, false);
+  REQUIRE(depl.getModStatus(1) == std::optional<bool>(false));
+
+  // Unknown mod id must be ignored rather than dereferencing the end iterator.
+  depl.setModStatus(999, true);
+  REQUIRE(depl.getModStatus(999) == std::nullopt);
+  REQUIRE(depl.getModStatus(1) == std::optional<bool>(false));
+
+  depl.setModStatus(1, true);
+  REQUIRE(depl.getModStatus(1) == std::optional<bool>(true));
+}
+
+TEST_CASE("Changing loadorder with an out-of-range source is a no-op", "[deployer]")
+{
+  resetAppDir();
+  Deployer depl = Deployer(DATA_DIR / "source", DATA_DIR / "app", "");
+  depl.addProfile();
+  depl.addMod(2, true);
+  depl.addMod(0, true);
+  depl.addMod(1, true);
+  const auto order = depl.getLoadorder();
+  REQUIRE(order.size() == 3);
+
+  depl.changeLoadorder(-1, 0);
+  depl.changeLoadorder(5, 1);
+  const auto unchanged = depl.getLoadorder();
+  REQUIRE(unchanged.size() == 3);
+  REQUIRE(unchanged == order);
+}
+

@@ -102,7 +102,9 @@ void Deployer::changeLoadorder(int from_index, int to_index)
 {
   if(to_index == from_index)
     return;
-  if(to_index < 0 || to_index >= loadorders_[current_profile_].size())
+  if(from_index < 0 || from_index >= static_cast<int>(loadorders_[current_profile_].size()))
+    return;
+  if(to_index < 0 || to_index >= static_cast<int>(loadorders_[current_profile_].size()))
     return;
   if(to_index < from_index)
   {
@@ -145,9 +147,10 @@ void Deployer::setModStatus(int mod_id, bool status)
 {
   auto iter = std::find_if(loadorders_[current_profile_].begin(),
                            loadorders_[current_profile_].end(),
-                           [mod_id, status](const auto& t) { return std::get<0>(t) == mod_id; });
+                           [mod_id](const auto& t) { return std::get<0>(t) == mod_id; });
+  if(iter == loadorders_[current_profile_].end())
+    return;
   std::get<1>(*iter) = status;
-  return;
 }
 
 bool Deployer::hasMod(int mod_id) const
