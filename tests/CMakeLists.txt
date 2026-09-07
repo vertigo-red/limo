@@ -13,6 +13,7 @@ set(TEST_SOURCES
         test_moddedapplication.cpp
         test_openmwdeployer.cpp
         test_reversedeployer.cpp
+        test_rootlevelcondition.cpp
         test_tagconditionnode.cpp
         test_tool.cpp
         test_utils.cpp
@@ -26,8 +27,12 @@ add_executable(tests ${TEST_SOURCES})
 target_include_directories(tests
     PRIVATE core
 )
+target_sources(tests
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/rootlevelcondition.cpp
+)
 target_link_libraries(tests
     PRIVATE Catch2::Catch2WithMain
+    PRIVATE Qt5::Widgets
     PRIVATE core
 )
 
