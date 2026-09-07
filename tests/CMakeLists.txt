@@ -4,6 +4,7 @@ find_package(Catch2 3 REQUIRED)
 set(TEST_SOURCES
         test_backupmanager.cpp
         test_bg3deployer.cpp
+        test_conflictsmodel.cpp
         test_cryptography.cpp
         test_deployer.cpp
         test_fomodinstaller.cpp
@@ -26,8 +27,12 @@ configure_file(test_utils.h.in test_utils.h)
 add_executable(tests ${TEST_SOURCES})
 target_include_directories(tests
     PRIVATE core
+    PRIVATE ${PROJECT_SOURCE_DIR}/src
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui
 )
 target_sources(tests
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/conflictsmodel.cpp
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/conflictsmodel.h
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/rootlevelcondition.cpp
 )
 target_link_libraries(tests
