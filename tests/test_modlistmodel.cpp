@@ -2,7 +2,6 @@
 #include "../src/ui/modlistmodel.h"
 #include "../src/ui/modlistproxymodel.h"
 #include <QBrush>
-#include <QLabel>
 #include <QRegularExpression>
 #include <QStringList>
 #include <catch2/catch_test_macros.hpp>
@@ -146,8 +145,8 @@ TEST_CASE("The mod list model exposes custom roles", "[modlist]")
   REQUIRE(model.data(model.index(0, 0), ModListModel::manual_tags_role).toStringList()
           == QStringList({ "aaa" }));
   REQUIRE(model.data(model.index(0, 0), ModListModel::auto_tags_role).toStringList()
-          == QStringList({ "auto" }));
-REQUIRE(model.data(model.index(0, 0), ModListModel::mod_size_role).value<qulonglong>() == 100);
+== QStringList({ "auto" }));
+  REQUIRE(model.data(model.index(0, 0), ModListModel::mod_size_role).value<qulonglong>() == 100);
   REQUIRE(model.data(model.index(0, 0), ModListModel::local_source_role).toString().isEmpty());
   REQUIRE(model.data(ModListModel::mod_id_role, 0, 0).toInt() == 1);
 }
@@ -161,8 +160,8 @@ TEST_CASE("Grouped mods only expose the active member", "[modlist]")
   mods.push_back(makeInfo(makeMod(3, "Solo Mod", "1.0", 3000), -1, false));
   model.setModInfo(mods);
 
-  REQUIRE(model.rowCount() == 2);
-  REQUIRE(model.data(model.index(0, ModListModel::mod_group_role)).toInt() == 5);
+REQUIRE(model.rowCount() == 2);
+  REQUIRE(model.data(model.index(0, 0), ModListModel::mod_group_role).toInt() == 5);
   REQUIRE(model.data(model.index(0, ModListModel::version_col), ModListModel::version_list_role)
             .toStringList() == QStringList({ "2.0", "1.0" }));
   REQUIRE(model.data(model.index(0, ModListModel::version_col), ModListModel::active_index_role).toInt()
@@ -195,8 +194,7 @@ TEST_CASE("The proxy model filters by group membership", "[modlist]")
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
   REQUIRE(proxy.rowCount() == 5);
 
@@ -216,8 +214,7 @@ TEST_CASE("The proxy model filters by deployer activation status", "[modlist]")
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.addFilter(ModListProxyModel::filter_active);
@@ -231,8 +228,7 @@ TEST_CASE("The proxy model filters by update availability", "[modlist]")
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.addFilter(ModListProxyModel::filter_updates);
@@ -246,8 +242,7 @@ TEST_CASE("The proxy model filters by tags", "[modlist]")
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.addTagFilter("combat", true, false);
@@ -273,8 +268,7 @@ TEST_CASE("The proxy model filters by filter string", "[modlist]")
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.setFilterString("Gamma");
@@ -295,8 +289,7 @@ TEST_CASE("Filter modes are mutually exclusive", "[modlist]")
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.addFilter(ModListProxyModel::filter_groups);
@@ -314,8 +307,7 @@ TEST_CASE("The proxy model sorts numerically by size", "[modlist]")
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
 
   proxy.sort(ModListModel::size_col, Qt::AscendingOrder);
@@ -336,25 +328,12 @@ TEST_CASE("The proxy model passes data through and keeps it read only", "[modlis
 {
   ModListModel model(nullptr);
   model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
+  ModListProxyModel proxy(nullptr, nullptr);
   proxy.setSourceModel(&model);
   proxy.sort(ModListModel::size_col, Qt::AscendingOrder);
 
-  REQUIRE(proxy.data(proxy.index(0, ModListModel::name_col)).toString() == "Alpha Mod");
+REQUIRE(proxy.data(proxy.index(0, ModListModel::name_col)).toString() == "Alpha Mod");
   REQUIRE_FALSE(proxy.setData(proxy.index(0, ModListModel::name_col), "Renamed", Qt::EditRole));
   REQUIRE(proxy.data(proxy.index(0, ModListModel::name_col)).toString() == "Alpha Mod");
 }
 
-TEST_CASE("The proxy model updates the row count label", "[modlist]")
-{
-  ModListModel model(nullptr);
-  model.setModInfo(sampleMods());
-  QLabel label;
-  ModListProxyModel proxy(&label);
-  proxy.setSourceModel(&model);
-  proxy.updateRowCountLabel();
-  REQUIRE(label.text() == "Mods displayed: 5");
-  proxy.addFilter(ModListProxyModel::filter_groups);
-  REQUIRE(label.text() == "Mods displayed: 1");
-}

@@ -154,7 +154,8 @@ void ModListProxyModel::removeTagFilter(const QString& tag, bool invalidate_filt
 
 void ModListProxyModel::updateRowCountLabel()
 {
-  row_count_label_->setText("Mods displayed: " + QString::number(rowCount()));
+  if(row_count_label_)
+    row_count_label_->setText("Mods displayed: " + QString::number(rowCount()));
 }
 
 bool ModListProxyModel::isEditable() const
