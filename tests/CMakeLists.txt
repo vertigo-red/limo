@@ -16,7 +16,6 @@ set(TEST_SOURCES
         test_reversedeployer.cpp
         test_rootlevelcondition.cpp
         test_tagconditionnode.cpp
-        test_main.cpp
         test_modlistmodel.cpp
         test_tool.cpp
         test_utils.cpp
@@ -42,7 +41,7 @@ target_sources(tests
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/rootlevelcondition.cpp
 )
 target_link_libraries(tests
-    PRIVATE Catch2::Catch2
+    PRIVATE Catch2::Catch2WithMain
     PRIVATE Qt5::Widgets
     PRIVATE core
 )
