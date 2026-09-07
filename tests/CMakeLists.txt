@@ -16,6 +16,8 @@ set(TEST_SOURCES
         test_reversedeployer.cpp
         test_rootlevelcondition.cpp
         test_tagconditionnode.cpp
+        test_main.cpp
+        test_modlistmodel.cpp
         test_tool.cpp
         test_utils.cpp
         test_utils.h
@@ -33,10 +35,14 @@ target_include_directories(tests
 target_sources(tests
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/conflictsmodel.cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/conflictsmodel.h
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/modlistmodel.cpp
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/modlistmodel.h
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/modlistproxymodel.cpp
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/modlistproxymodel.h
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/rootlevelcondition.cpp
 )
 target_link_libraries(tests
-    PRIVATE Catch2::Catch2WithMain
+    PRIVATE Catch2::Catch2
     PRIVATE Qt5::Widgets
     PRIVATE core
 )
