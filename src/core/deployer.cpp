@@ -430,13 +430,13 @@ std::pair<std::map<std::filesystem::path, int>, std::map<int, unsigned long>>
 Deployer::getDeploymentSourceFilesAndModSizes(const std::vector<int>& loadorder) const
 {
   std::map<sfs::path, int> source_files{};
-  std::map<int, unsigned long> mod_sizes{};
+  std::map<int, uintmax_t> mod_sizes{};
   for(int i = loadorder.size() - 1; i >= 0; i--)
   {
     if(!checkModPathExistsAndMaybeLogError(loadorder[i]))
       continue;
     sfs::path mod_base_path = source_path_ / std::to_string(loadorder[i]);
-    unsigned long mod_size = 0;
+    uintmax_t mod_size = 0;
     for(auto const& dir_entry : sfs::recursive_directory_iterator(mod_base_path))
     {
       const bool is_regular_file = dir_entry.is_regular_file();

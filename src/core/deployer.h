@@ -9,6 +9,7 @@
 #include "filechangechoices.h"
 #include "log.h"
 #include "progressnode.h"
+#include <cstdint>
 #include <filesystem>
 #include <map>
 #include <optional>
@@ -75,8 +76,8 @@ public:
    * \param progress_node Used to inform about the current progress of deployment.
    * \return A map from deployed mod ids to their respective mods total size on disk.
    */
-  virtual std::map<int, unsigned long> deploy(const std::vector<int>& loadorder,
-                                              std::optional<ProgressNode*> progress_node = {});
+  virtual std::map<int, uintmax_t> deploy(const std::vector<int>& loadorder,
+                                          std::optional<ProgressNode*> progress_node = {});
   /*!
    * \brief Deploys all mods to the target directory using hard links.
    * If any file already exists in the target directory, a backup for that file is created.
@@ -86,7 +87,7 @@ public:
    * \param progress_node Used to inform about the current progress of deployment.
    * \return A map from deployed mod ids to their respective mods total size on disk.
    */
-  virtual std::map<int, unsigned long> deploy(std::optional<ProgressNode*> progress_node = {});
+  virtual std::map<int, uintmax_t> deploy(std::optional<ProgressNode*> progress_node = {});
   /*!
    * \brief Removes all deployed mods from the target directory and restores backups.
    * \param progress_node Used to inform about the current progress.
@@ -426,7 +427,7 @@ protected:
    * \param loadorder The load order used for file checks.
    * \return The generated maps.
    */
-  std::pair<std::map<std::filesystem::path, int>, std::map<int, unsigned long>>
+std::pair<std::map<std::filesystem::path, int>, std::map<int, uintmax_t>>
   getDeploymentSourceFilesAndModSizes(const std::vector<int>& loadorder) const;
   /*!
    * \brief Backs up all files which would be overwritten during deployment and restores all

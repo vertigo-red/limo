@@ -167,8 +167,8 @@ bool ModListProxyModel::lessThan(const QModelIndex& left, const QModelIndex& rig
   const int col = left.column();
   if(col == ModListModel::size_col)
   {
-    const auto left_size = left.data(ModListModel::mod_size_role).value<unsigned long>();
-    const auto right_size = right.data(ModListModel::mod_size_role).value<unsigned long>();
+    const auto left_size = left.data(ModListModel::mod_size_role).value<qulonglong>();
+    const auto right_size = right.data(ModListModel::mod_size_role).value<qulonglong>();
     return left_size < right_size;
   }
   return QSortFilterProxyModel::lessThan(left, right);
