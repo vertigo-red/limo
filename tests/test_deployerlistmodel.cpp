@@ -92,7 +92,7 @@ TEST_CASE("The deployer list model exposes custom roles", "[deployerlist]")
   model.setDeployerInfo(threeModInfo());
 
   REQUIRE(model.data(model.index(1, 0), DeployerListModel::mod_status_role).toBool() == false);
-  REQUIRE(model.data(model.index(0, 0), DeployerListModel::mod_id_role).toInt() == 1);
+  REQUIRE(model.data(model.index(0, 0), ModListModel::mod_id_role).toInt() == 1);
   REQUIRE(model.data(model.index(0, 0), ModListModel::mod_name_role).toString() == "Alpha");
   REQUIRE(model.data(model.index(0, 0), DeployerListModel::mod_tags_role).toStringList()
           == QStringList({ "zzz", "mid" }));
