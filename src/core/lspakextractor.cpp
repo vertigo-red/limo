@@ -122,11 +122,17 @@ unsigned int LsPakExtractor::readFileList()
   unsigned int num_files = *reinterpret_cast<unsigned int*>(buffer.data());
   file.read(buffer.data(), 4);
   unsigned int compressed_size = *reinterpret_cast<unsigned int*>(buffer.data());
+
+  const uint64_t file_list_size =
+    sizeof(LsPakFileListEntry) * static_cast<uint64_t>(num_files);
+  if(file_list_size > static_cast<uint64_t>(1u << 30))
+    throw std::runtime_error(std::format("File list is too large: {}B.", file_list_size));
+
   std::string data = extractData(
-    file.tellg(), compressed_size, sizeof(LsPakFileListEntry) * num_files, COMPRESSION_LZ4);
+    file.tellg(), compressed_size, static_cast<unsigned int>(file_list_size), COMPRESSION_LZ4);
 
   file_list_.clear();
-  for(int i = 0; i < sizeof(LsPakFileListEntry) * num_files; i += sizeof(LsPakFileListEntry))
+  for(size_t i = 0; i < file_list_size; i += sizeof(LsPakFileListEntry))
     file_list_.push_back(*reinterpret_cast<LsPakFileListEntry*>(data.data() + i));
   return compressed_size;
 }
