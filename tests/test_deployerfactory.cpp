@@ -77,8 +77,6 @@ TEST_CASE("DeployerFactory constructs every deployer type", "[deployerfactory]")
                                                case_match.source,
                                                case_match.dest,
                                                "c"));
-  REQUIRE_NOTHROW(
-    DeployerFactory::makeDeployer(DeployerFactory::LOOTDEPLOYER, loot.source, loot.dest, "l"));
   REQUIRE_NOTHROW(DeployerFactory::makeDeployer(
     DeployerFactory::REVERSEDEPLOYER, reverse.source, reverse.dest, "r"));
   REQUIRE_NOTHROW(DeployerFactory::makeDeployer(DeployerFactory::OPENMWARCHIVEDEPLOYER,
@@ -93,11 +91,21 @@ TEST_CASE("DeployerFactory constructs every deployer type", "[deployerfactory]")
     DeployerFactory::makeDeployer(DeployerFactory::BG3DEPLOYER, bg3.source, bg3.dest, "b"));
 }
 
+TEST_CASE("LootDeployer construction requires a valid game installation", "[deployerfactory]")
+{
+  // LootDeployer initializes through libloot and validates the plugins it finds
+  // in the source directory. Without a real game install this surfaces as a
+  // runtime error instead of silently constructing a half-initialized deployer.
+  FactoryDirs loot("loot3", /*with_game_file=*/true);
+  REQUIRE_THROWS_AS(DeployerFactory::makeDeployer(
+                      DeployerFactory::LOOTDEPLOYER, loot.source, loot.dest, "l"),
+                    std::runtime_error);
+}
+
 TEST_CASE("DeployerFactory creates the concrete deployer class", "[deployerfactory]")
 {
   FactoryDirs simple("simple2");
   FactoryDirs case_match("casematch2");
-  FactoryDirs loot("loot2", /*with_game_file=*/true);
   FactoryDirs reverse("reverse2");
   FactoryDirs openmw_archive("openmw_archive2");
   FactoryDirs openmw_plugin("openmw_plugin2");
@@ -110,8 +118,6 @@ TEST_CASE("DeployerFactory creates the concrete deployer class", "[deployerfacto
                                                 case_match.source,
                                                 case_match.dest,
                                                 "c");
-  auto loot_ptr =
-    DeployerFactory::makeDeployer(DeployerFactory::LOOTDEPLOYER, loot.source, loot.dest, "l");
   auto reverse_ptr = DeployerFactory::makeDeployer(
     DeployerFactory::REVERSEDEPLOYER, reverse.source, reverse.dest, "r");
   auto archive_ptr = DeployerFactory::makeDeployer(DeployerFactory::OPENMWARCHIVEDEPLOYER,
@@ -127,7 +133,6 @@ TEST_CASE("DeployerFactory creates the concrete deployer class", "[deployerfacto
 
   REQUIRE(isExact<Deployer>(simple_ptr));
   REQUIRE(isExact<CaseMatchingDeployer>(case_ptr));
-  REQUIRE(isExact<LootDeployer>(loot_ptr));
   REQUIRE(isExact<ReverseDeployer>(reverse_ptr));
   REQUIRE(isExact<OpenMwArchiveDeployer>(archive_ptr));
   REQUIRE(isExact<OpenMwPluginDeployer>(plugin_ptr));
