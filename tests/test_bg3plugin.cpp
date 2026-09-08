@@ -3,48 +3,47 @@
 
 
 /*!
- * A minimal meta.lsx in the shape Bg3Plugin::Bg3Plugin parses: a <save> node
- * containing an id="Config" node with a root/children tree holding ModuleInfo
- * (Name, UUID, Version, Description, Folder) and Dependencies entries.
+ * A minimal meta.lsx in the shape Bg3Plugin::Bg3Plugin parses it. pugixml's
+ * find_child_by_attribute only searches *direct* children, so Config must be a
+ * direct child of <save>, and ModuleInfo/Dependencies direct children of root's
+ * <children>. ModuleInfo holds its <attribute> nodes directly.
  */
 namespace
 {
 const std::string plugin_xml = R"(<?xml version="1.0" encoding="UTF-8"?>
 <save>
   <version major="4"/>
-  <region id="ModuleSettings">
-    <node id="Config">
-      <children>
-        <node id="root">
-          <children>
-            <node id="ModuleInfo">
-              <attribute id="Name" value="My Mod"/>
-              <attribute id="Folder" value="MyModFolder"/>
-              <attribute id="Version" value="16777216"/>
-              <attribute id="UUID" value="11111111-2222-3333-4444-555555555555"/>
-              <attribute id="Description" value="A test plugin"/>
-            </node>
-            <node id="Dependencies">
-              <children>
-                <node id="ModuleShortDesc">
-                  <attribute id="Folder" type="LSString" value="DepOne"/>
-                  <attribute id="Name" type="LSString" value="Dependency One"/>
-                  <attribute id="UUID" type="guid"
-                             value="aaaaaaaa-0000-0000-0000-000000000001"/>
-                </node>
-                <node id="ModuleShortDesc">
-                  <attribute id="Folder" type="LSString" value="DepTwo"/>
-                  <attribute id="Name" type="LSString" value="Dependency Two"/>
-                  <attribute id="UUID" type="guid"
-                             value="bbbbbbbb-0000-0000-0000-000000000002"/>
-                </node>
-              </children>
-            </node>
-          </children>
-        </node>
-      </children>
-    </node>
-  </region>
+  <node id="Config">
+    <children>
+      <node id="root">
+        <children>
+          <node id="ModuleInfo">
+            <attribute id="Name" value="My Mod"/>
+            <attribute id="Folder" value="MyModFolder"/>
+            <attribute id="Version" value="16777216"/>
+            <attribute id="UUID" value="11111111-2222-3333-4444-555555555555"/>
+            <attribute id="Description" value="A test plugin"/>
+          </node>
+          <node id="Dependencies">
+            <children>
+              <node id="ModuleShortDesc">
+                <attribute id="Folder" type="LSString" value="DepOne"/>
+                <attribute id="Name" type="LSString" value="Dependency One"/>
+                <attribute id="UUID" type="guid"
+                           value="aaaaaaaa-0000-0000-0000-000000000001"/>
+              </node>
+              <node id="ModuleShortDesc">
+                <attribute id="Folder" type="LSString" value="DepTwo"/>
+                <attribute id="Name" type="LSString" value="Dependency Two"/>
+                <attribute id="UUID" type="guid"
+                           value="bbbbbbbb-0000-0000-0000-000000000002"/>
+              </node>
+            </children>
+          </node>
+        </children>
+      </node>
+    </children>
+  </node>
 </save>)";
 }  // namespace
 
