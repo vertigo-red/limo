@@ -297,7 +297,7 @@ TEST_CASE("The application manager forwards helper signals", "[appmgr]")
 
   mgr.sendUpdateProgress(0.42f);
   REQUIRE(rec.progress_.size() == 1);
-  REQUIRE(rec.progress_.back() == Approx(0.42f));
+  REQUIRE(rec.progress_.back() == Catch::Approx(0.42f));
 }
 
 TEST_CASE("Removing an application updates the stored settings", "[appmgr]")
