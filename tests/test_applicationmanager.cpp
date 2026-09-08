@@ -7,7 +7,7 @@
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QSettings>
-#include <QSignalSpy>
+#include <QtTest/QSignalSpy>
 #include <catch2/catch_test_macros.hpp>
 #include <atomic>
 #include <filesystem>

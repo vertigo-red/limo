@@ -54,6 +54,7 @@ target_sources(tests
 target_link_libraries(tests
     PRIVATE Catch2::Catch2WithMain
     PRIVATE Qt5::Widgets
+    PRIVATE Qt5::Test
     PRIVATE core
 )
 
