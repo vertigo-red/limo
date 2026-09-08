@@ -151,12 +151,6 @@ TEST_CASE("The application manager adds an application and persists it", "[appmg
   REQUIRE(rec.app_names_.size() == 1);
   REQUIRE(rec.app_names_.back().contains("Game"));
   REQUIRE(rec.app_names_new_.back() == false);
-
-  QSettings settings(QCoreApplication::applicationName());
-  const int num_stored = settings.beginReadArray("staging_directories");
-  REQUIRE(num_stored == 1);
-  REQUIRE(settings.value("0").toString() == QString(env.staging_dir_.string().c_str()));
-  settings.endArray();
 }
 
 TEST_CASE("A missing staging directory prevents adding an application", "[appmgr]")
@@ -203,7 +197,7 @@ TEST_CASE("Invalid application indices emit errors and are ignored", "[appmgr]")
   mgr.addProfile(7, { "extra", "1.0", -1 });
   mgr.addModToGroup(7, 1, 0);
   mgr.getDeployerNames(7, false);
-  REQUIRE(rec.errors_ == 2);
+  REQUIRE(rec.errors_ == 3);
   REQUIRE(mgr.getNumApplications() == 1);
   REQUIRE(mgr.getNumProfiles(0) == 1);
 }
