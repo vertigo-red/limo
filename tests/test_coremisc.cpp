@@ -197,19 +197,40 @@ TEST_CASE("Progress node ids and children are accessible", "[progress]")
   REQUIRE(root.child(1).id() == 1);
 }
 
-TEST_CASE("Progress callback fires on step size and completion", "[progress]")
+TEST_CASE("Progress callback fires on completion regardless of step size", "[progress]")
 {
   std::vector<float> calls;
   ProgressNode root([&calls](float p) { calls.push_back(p); });
   root.setUpdateStepSize(1.0f);
   root.setTotalSteps(2);
-  root.advance();
 
-  REQUIRE(calls.size() >= 1);
-  REQUIRE(calls.back() == Catch::Approx(0.5f));
+  REQUIRE(calls.size() == 1);  // initial call from setProgressCallback (progress 0)
+  REQUIRE(calls.back() == Catch::Approx(0.0f));
 
-  root.advance();  // reaches 1.0 -> always reported
+  root.advance();  // 0.5 < 1.0 step size -> no callback
+  REQUIRE(calls.size() == 1);
+
+  root.advance();  // reaches 1.0 -> reported
+  REQUIRE(calls.size() == 2);
   REQUIRE(calls.back() == Catch::Approx(1.0f));
+}
+
+TEST_CASE("Progress callback fires above the configured step size", "[progress]")
+{
+  std::vector<float> calls;
+  ProgressNode root([&calls](float p) { calls.push_back(p); });
+  root.setUpdateStepSize(0.5f);
+  root.setTotalSteps(4);
+
+  root.advance();  // 0.25 -> 0.25 - 0 = 0.25 <= 0.5, not reported
+  REQUIRE(calls.size() == 1);
+
+  root.advance();  // 0.5 -> delta 0.5 not > 0.5, not reported
+  REQUIRE(calls.size() == 1);
+
+  root.advance();  // 0.75 -> delta 0.75 > 0.5, reported
+  REQUIRE(calls.size() == 2);
+  REQUIRE(calls.back() == Catch::Approx(0.75f));
 }
 
 TEST_CASE("Manual tags add and remove mods", "[tag]")
