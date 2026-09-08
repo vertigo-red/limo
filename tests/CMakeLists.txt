@@ -22,6 +22,7 @@ set(TEST_SOURCES
         test_rootlevelcondition.cpp
         test_tagconditionnode.cpp
         test_modlistmodel.cpp
+        test_pathutils.cpp
         test_tool.cpp
         test_utils.cpp
         test_utils.h
