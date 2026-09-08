@@ -3,10 +3,12 @@ find_package(Catch2 3 REQUIRED)
 
 set(TEST_SOURCES
         test_backupmanager.cpp
+        test_backuplistmodel.cpp
         test_bg3deployer.cpp
         test_conflictsmodel.cpp
         test_cryptography.cpp
         test_deployer.cpp
+        test_deployerlistmodel.cpp
         test_fomodinstaller.cpp
         test_installer.cpp
         test_lootdeployer.cpp
@@ -32,8 +34,14 @@ target_include_directories(tests
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui
 )
 target_sources(tests
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/backuplistmodel.cpp
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/backuplistmodel.h
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/conflictsmodel.cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/conflictsmodel.h
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/deployerlistmodel.cpp
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/deployerlistmodel.h
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/deployerlistproxymodel.cpp
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/deployerlistproxymodel.h
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/modlistmodel.cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/modlistmodel.h
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/modlistproxymodel.cpp
