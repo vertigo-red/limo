@@ -11,6 +11,7 @@ set(TEST_SOURCES
         test_coremisc.cpp
         test_cryptography.cpp
         test_deployer.cpp
+        test_deployerfactory.cpp
         test_deployerlistmodel.cpp
         test_fomodinstaller.cpp
         test_installer.cpp
