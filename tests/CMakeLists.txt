@@ -2,6 +2,7 @@
 find_package(Catch2 3 REQUIRED)
 
 set(TEST_SOURCES
+        test_applicationmanager.cpp
         test_backupmanager.cpp
         test_backuplistmodel.cpp
         test_bg3deployer.cpp
@@ -34,6 +35,8 @@ target_include_directories(tests
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui
 )
 target_sources(tests
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/applicationmanager.cpp
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/applicationmanager.h
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/backuplistmodel.cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/backuplistmodel.h
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ui/conflictsmodel.cpp
