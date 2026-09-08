@@ -214,7 +214,7 @@ TEST_CASE("Progress callback fires on step size and completion", "[progress]")
 
 TEST_CASE("Manual tags add and remove mods", "[tag]")
 {
-  ManualTag tag("combat");
+  ManualTag tag(std::string("combat"));
   REQUIRE(tag.getName() == "combat");
   REQUIRE_FALSE(tag.hasMod(1));
   REQUIRE(tag.getNumMods() == 0);
@@ -234,7 +234,7 @@ TEST_CASE("Manual tags add and remove mods", "[tag]")
 
 TEST_CASE("Manual tags serialize and deserialize from JSON", "[tag]")
 {
-  ManualTag tag("combat");
+  ManualTag tag(std::string("combat"));
   tag.addMod(3);
   tag.addMod(4);
 
@@ -250,8 +250,8 @@ TEST_CASE("Manual tags serialize and deserialize from JSON", "[tag]")
 
 TEST_CASE("Manual tags compare by name and support setMods", "[tag]")
 {
-  ManualTag a("alpha");
-  ManualTag b("beta");
+  ManualTag a(std::string("alpha"));
+  ManualTag b(std::string("beta"));
   REQUIRE(a == "alpha");
   REQUIRE(a == a);
   REQUIRE_FALSE(a == b);
