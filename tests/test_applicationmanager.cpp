@@ -7,7 +7,6 @@
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QSettings>
-#include <QtTest/QSignalSpy>
 #include <catch2/catch_test_macros.hpp>
 #include <atomic>
 #include <filesystem>
@@ -19,6 +18,9 @@
  * settings file never touches the real user configuration, plus a staging
  * directory. The Installer::log callback installed by the manager is reset when
  * the environment goes away so later tests are not left with a dangling lambda.
+ *
+ * QSignalSpy lives in Qt5::Test, which the nix build root does not link, so the
+ * tests record signals with plain QObject connections instead.
  */
 namespace
 {
@@ -71,6 +73,35 @@ EditApplicationInfo makeAppInfo(const std::filesystem::path& staging_dir,
   info.app_version = "1.0";
   return info;
 }
+
+class SignalRecorder : public QObject
+{
+public:
+  SignalRecorder(ApplicationManager* mgr)
+  {
+    QObject::connect(mgr, &ApplicationManager::sendApplicationNames, this,
+                     [this](QStringList names, QStringList, bool is_new)
+                     { app_names_.append(names); app_names_new_.append(is_new); });
+    QObject::connect(mgr, &ApplicationManager::sendDeployerNames, this,
+                     [this](QStringList names, bool) { depl_names_.append(names); });
+    QObject::connect(mgr, &ApplicationManager::sendError, this,
+                     [this](QString, QString) { errors_++; });
+    QObject::connect(mgr, &ApplicationManager::scrollLists, this,
+                     [this]() { scrolls_++; });
+    QObject::connect(mgr, &ApplicationManager::updateProgress, this,
+                     [this](float p) { progress_.append(p); });
+    QObject::connect(mgr, &ApplicationManager::completedOperations, this,
+                     [this](QString) { completed_++; });
+  }
+
+  std::vector<QStringList> app_names_;
+  QList<bool> app_names_new_;
+  std::vector<QStringList> depl_names_;
+  int errors_ = 0;
+  int scrolls_ = 0;
+  std::vector<float> progress_;
+  int completed_ = 0;
+};
 }  // namespace
 
 
@@ -106,8 +137,8 @@ TEST_CASE("The application manager adds an application and persists it", "[appmg
 {
   AppMgrEnv env("add");
   ApplicationManager mgr;
+  SignalRecorder rec(&mgr);
 
-  QSignalSpy names_spy(&mgr, &ApplicationManager::sendApplicationNames);
   mgr.addApplication(makeAppInfo(env.staging_dir_, "Game"));
   REQUIRE(mgr.getNumApplications() == 1);
   REQUIRE(mgr.getNumProfiles(0) == 1);
@@ -116,9 +147,9 @@ TEST_CASE("The application manager adds an application and persists it", "[appmg
   REQUIRE(mgr.toString().find("Default") != std::string::npos);
 
   mgr.getApplicationNames(false);
-  REQUIRE(names_spy.count() == 1);
-  REQUIRE(names_spy.last().at(0).toStringList().contains("Game"));
-  REQUIRE(names_spy.last().at(2).toBool() == false);
+  REQUIRE(rec.app_names_.size() == 1);
+  REQUIRE(rec.app_names_.back().contains("Game"));
+  REQUIRE(rec.app_names_new_.back() == false);
 
   QSettings settings(QCoreApplication::applicationName());
   const int num_stored = settings.beginReadArray("staging_directories");
@@ -131,13 +162,12 @@ TEST_CASE("A missing staging directory prevents adding an application", "[appmgr
 {
   AppMgrEnv env("missing");
   ApplicationManager mgr;
+  SignalRecorder rec(&mgr);
 
-  QSignalSpy error_spy(&mgr, &ApplicationManager::sendError);
-  QSignalSpy completed_spy(&mgr, &ApplicationManager::completedOperations);
   mgr.addApplication(makeAppInfo(env.staging_dir_.parent_path() / "does_not_exist"));
   REQUIRE(mgr.getNumApplications() == 0);
-  REQUIRE(error_spy.count() == 1);
-  REQUIRE(completed_spy.count() >= 1);
+  REQUIRE(rec.errors_ == 1);
+  REQUIRE(rec.completed_ >= 1);
 }
 
 TEST_CASE("The application manager restores its state from settings on init", "[appmgr]")
@@ -150,14 +180,14 @@ TEST_CASE("The application manager restores its state from settings on init", "[
   }
   {
     ApplicationManager restored;
+    SignalRecorder rec(&restored);
     restored.init();
     REQUIRE(restored.getNumApplications() == 1);
     REQUIRE(restored.toString().find("Game") != std::string::npos);
 
-    QSignalSpy names_spy(&restored, &ApplicationManager::sendApplicationNames);
     restored.getApplicationNames(false);
-    REQUIRE(names_spy.count() == 1);
-    REQUIRE(names_spy.last().at(0).toStringList().contains("Game"));
+    REQUIRE(rec.app_names_.size() == 1);
+    REQUIRE(rec.app_names_.back().contains("Game"));
   }
 }
 
@@ -167,12 +197,12 @@ TEST_CASE("Invalid application indices emit errors and are ignored", "[appmgr]")
   ApplicationManager mgr;
   mgr.addApplication(makeAppInfo(env.staging_dir_));
 
-  QSignalSpy error_spy(&mgr, &ApplicationManager::sendError);
+  SignalRecorder rec(&mgr);
   mgr.removeApplication(7, false);
   mgr.addProfile(7, { "extra", "1.0", -1 });
   mgr.addModToGroup(7, 1, 0);
   mgr.getDeployerNames(7, false);
-  REQUIRE(error_spy.count() == 2);
+  REQUIRE(rec.errors_ == 2);
   REQUIRE(mgr.getNumApplications() == 1);
   REQUIRE(mgr.getNumProfiles(0) == 1);
 }
@@ -183,23 +213,23 @@ TEST_CASE("Deployer index guards emit errors for an app without deployers", "[ap
   ApplicationManager mgr;
   mgr.addApplication(makeAppInfo(env.staging_dir_));
 
-  QSignalSpy names_spy(&mgr, &ApplicationManager::sendDeployerNames);
+  SignalRecorder rec(&mgr);
   mgr.getDeployerNames(0, false);
-  REQUIRE(names_spy.count() == 1);
-  REQUIRE(names_spy.last().at(0).toStringList().isEmpty());
+  REQUIRE(rec.depl_names_.size() == 1);
+  REQUIRE(rec.depl_names_.back().isEmpty());
 
-  QSignalSpy error_spy(&mgr, &ApplicationManager::sendError);
   mgr.setModStatus(0, 0, 1, true);
   mgr.changeLoadorder(0, 0, 0, 1);
   mgr.editDeployer({}, 0, 0);
   mgr.addModToIgnoreList(0, 0, 1);
-  REQUIRE(error_spy.count() == 4);
+  REQUIRE(rec.errors_ == 4);
 }
 
 TEST_CASE("The application manager adds applications with deployers", "[appmgr]")
 {
   AppMgrEnv env("withdepl");
   ApplicationManager mgr;
+  SignalRecorder rec(&mgr);
 
   EditDeployerInfo first;
   first.type = DeployerFactory::SIMPLEDEPLOYER;
@@ -212,10 +242,9 @@ TEST_CASE("The application manager adds applications with deployers", "[appmgr]"
   mgr.addApplication(info);
   REQUIRE(mgr.getNumApplications() == 1);
 
-  QSignalSpy names_spy(&mgr, &ApplicationManager::sendDeployerNames);
   mgr.getDeployerNames(0, false);
-  REQUIRE(names_spy.count() == 1);
-  REQUIRE(names_spy.last().at(0).toStringList() == QStringList{ "Main" });
+  REQUIRE(rec.depl_names_.size() == 1);
+  REQUIRE(rec.depl_names_.back() == QStringList{ "Main" });
 
   EditDeployerInfo second;
   second.type = DeployerFactory::CASEMATCHINGDEPLOYER;
@@ -225,8 +254,8 @@ TEST_CASE("The application manager adds applications with deployers", "[appmgr]"
   mgr.addDeployer(0, second);
 
   mgr.getDeployerNames(0, false);
-  REQUIRE(names_spy.count() == 2);
-  REQUIRE(names_spy.last().at(0).toStringList() == QStringList{ "Main", "Extra" });
+  REQUIRE(rec.depl_names_.size() == 2);
+  REQUIRE(rec.depl_names_.back() == QStringList{ "Main", "Extra" });
 
   mgr.getDeployerInfo(0, 0);
   mgr.getDeployerInfo(0, 1);
@@ -260,15 +289,14 @@ TEST_CASE("The application manager forwards helper signals", "[appmgr]")
 {
   AppMgrEnv env("signals");
   ApplicationManager mgr;
+  SignalRecorder rec(&mgr);
 
-  QSignalSpy scroll_spy(&mgr, &ApplicationManager::scrollLists);
   mgr.onScrollLists();
-  REQUIRE(scroll_spy.count() == 1);
+  REQUIRE(rec.scrolls_ == 1);
 
-  QSignalSpy progress_spy(&mgr, &ApplicationManager::updateProgress);
   mgr.sendUpdateProgress(0.42f);
-  REQUIRE(progress_spy.count() == 1);
-  REQUIRE(progress_spy.last().at(0).toFloat() == Approx(0.42f));
+  REQUIRE(rec.progress_.size() == 1);
+  REQUIRE(rec.progress_.back() == Approx(0.42f));
 }
 
 TEST_CASE("Removing an application updates the stored settings", "[appmgr]")
