@@ -7,6 +7,7 @@ set(TEST_SOURCES
         test_backuplistmodel.cpp
         test_bg3deployer.cpp
         test_conflictsmodel.cpp
+        test_coremisc.cpp
         test_cryptography.cpp
         test_deployer.cpp
         test_deployerlistmodel.cpp
