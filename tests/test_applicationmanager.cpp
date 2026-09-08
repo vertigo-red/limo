@@ -7,6 +7,7 @@
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QSettings>
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <atomic>
 #include <filesystem>
@@ -81,15 +82,15 @@ public:
   {
     QObject::connect(mgr, &ApplicationManager::sendApplicationNames, this,
                      [this](QStringList names, QStringList, bool is_new)
-                     { app_names_.append(names); app_names_new_.append(is_new); });
+                     { app_names_.push_back(names); app_names_new_.append(is_new); });
     QObject::connect(mgr, &ApplicationManager::sendDeployerNames, this,
-                     [this](QStringList names, bool) { depl_names_.append(names); });
+                     [this](QStringList names, bool) { depl_names_.push_back(names); });
     QObject::connect(mgr, &ApplicationManager::sendError, this,
                      [this](QString, QString) { errors_++; });
     QObject::connect(mgr, &ApplicationManager::scrollLists, this,
                      [this]() { scrolls_++; });
     QObject::connect(mgr, &ApplicationManager::updateProgress, this,
-                     [this](float p) { progress_.append(p); });
+                     [this](float p) { progress_.push_back(p); });
     QObject::connect(mgr, &ApplicationManager::completedOperations, this,
                      [this](QString) { completed_++; });
   }
