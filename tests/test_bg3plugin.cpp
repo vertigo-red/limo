@@ -109,7 +109,7 @@ TEST_CASE("Bg3Plugin writes into Mods and ModOrder nodes", "[bg3plugin]")
 
   const auto added = mods_node.find_child_by_attribute("id", "ModuleShortDesc");
   REQUIRE_FALSE(added.empty());
-  REQUIRE(added.child("attribute").child_attribute("value").value() ==
+  REQUIRE(added.child("attribute").attribute("value").value() ==
           plugin.getDirectory());
 
   pugi::xml_document order_doc;
@@ -119,7 +119,7 @@ TEST_CASE("Bg3Plugin writes into Mods and ModOrder nodes", "[bg3plugin]")
 
   const auto ordered = order_node.find_child_by_attribute("id", "Module");
   REQUIRE_FALSE(ordered.empty());
-  REQUIRE(ordered.child("attribute").child_attribute("value").value() ==
+  REQUIRE(ordered.child("attribute").attribute("value").value() ==
           plugin.getUuid());
 }
 
